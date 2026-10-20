@@ -36,13 +36,14 @@ const MODEL = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
 const $ = id => document.getElementById(id);
 const messagesEl=$("messages"), content=$("content"), promptEl=$("prompt"), sendBtn=$("sendBtn");
 let engine=null, loading=null, busy=false, chats=[], activeId=null;
+const welcomeHTML=$("welcome").outerHTML;
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function setStatus(text,ready=false){$("statusText").textContent=text;$("statusDot").classList.toggle("ready",ready)}
 function currentChat(){return chats.find(c=>c.id===activeId)}
 function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function formatText(text){let s=escapeHTML(text);s=s.replace(/```([\w+-]*)\n([\s\S]*?)```/g,(_,lang,code)=>'<pre><code>'+code+'</code></pre>');s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');return s.split(/\n{2,}/).map(p=>p.startsWith('<pre>')?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('')}
 function renderHistory(){const host=$("history");host.innerHTML="";for(const c of [...chats].reverse()){const b=document.createElement("button");b.className="history-item"+(c.id===activeId?" active":"");b.textContent=c.title||"New conversation";b.title=b.textContent;b.onclick=()=>openChat(c.id);host.append(b)}}
-function renderMessages(){messagesEl.innerHTML="";const c=currentChat();if(!c||!c.messages.length){messagesEl.innerHTML=$("welcome").outerHTML;bindSuggestions();return}for(const m of c.messages)addMessageDOM(m.role,m.content,false);scrollBottom()}
+function renderMessages(){messagesEl.innerHTML="";const c=currentChat();if(!c||!c.messages.length){messagesEl.innerHTML=welcomeHTML;bindSuggestions();return}for(const m of c.messages)addMessageDOM(m.role,m.content,false);scrollBottom()}
 function bindSuggestions(){messagesEl.querySelectorAll("[data-prompt]").forEach(b=>b.onclick=()=>{promptEl.value=b.dataset.prompt;resizePrompt();sendMessage()})}
 function openChat(id){activeId=id;renderMessages();renderHistory()}
 function startChat(){const c={id:newId(),title:"New conversation",messages:[]};chats.push(c);activeId=c.id;renderMessages();renderHistory();promptEl.focus()}
